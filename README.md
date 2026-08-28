@@ -1,14 +1,14 @@
-# FAC B13 — versão corrigida
+# FAC B13 • Configurações editáveis
 
-## Se o banco já está instalado
-No Supabase > SQL Editor, execute **somente** `supabase/00_CORRIGIR_LOGIN_AGORA.sql`.
-Ele corrige o erro `function digest(text, unknown) does not exist` sem apagar os dados.
+Esta versão parte do sistema que já estava funcionando e adiciona edição das regras pela Central da Liderança.
 
-Depois atualize a página do site com `Ctrl + F5` e tente entrar novamente.
+## Atualização sem apagar dados
+1. No Supabase > SQL Editor, execute **somente** `supabase/03_ATIVAR_CONFIGURACOES_EDITAVEIS.sql`.
+2. Substitua os arquivos do site no GitHub pelos desta pasta e faça o deploy no Vercel.
+3. Entre em **Liderança > Configurações**.
 
-## Instalação do zero
-Se quiser zerar toda a B13, execute `supabase/01_REINSTALAR_B13_COMPLETO.sql`.
-Depois execute `supabase/02_TESTAR_INSTALACAO.sql`.
+A liderança pode editar: meta diária, porcentagem do membro, porcentagem da FAC B13, venda para membro e venda para público.
 
-## Importante
-A Publishable Key é usada apenas no frontend. Nunca coloque `service_role` ou Secret Key no site.
+Ao salvar, as novas entregas passam a usar as novas regras e todos os **pagamentos pendentes** são recalculados automaticamente. Pagamentos já marcados como **pago** não são alterados, preservando o histórico.
+
+A conversão continua fixa em **1 folha = 3 kits**.
