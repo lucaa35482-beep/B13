@@ -1,4 +1,3 @@
-import './bootstrap.js';
 let ctx=null,currentPage='dashboard';const C=document.getElementById('leaderContent');document.getElementById('logoutBtn').onclick=signOutB13;document.querySelectorAll('#leaderNav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
 (async()=>{ctx=await getSessionProfile();if(!ctx)return;if(!['gerente','sub_lider','lider'].includes(ctx.profile.role)){location.href='member.html';return;}userName.textContent=ctx.profile.name;userRole.textContent=ctx.profile.role.replace('_',' ').toUpperCase();go('dashboard');})();
 function go(p){currentPage=p;document.querySelectorAll('#leaderNav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));render();}window.go=go;

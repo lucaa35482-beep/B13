@@ -1,4 +1,3 @@
-import './bootstrap.js';
 let ctx=null,currentPage='home';const C=document.getElementById('memberContent');
 document.getElementById('logoutBtn').onclick=signOutB13;document.querySelectorAll('#memberNav button').forEach(b=>b.onclick=()=>go(b.dataset.page));
 (async()=>{ctx=await getSessionProfile();if(!ctx)return;if(['gerente','sub_lider','lider'].includes(ctx.profile.role)){location.href='leader.html';return;}userName.textContent=ctx.profile.name;userRole.textContent=ctx.profile.role.toUpperCase();avatar.textContent=initials(ctx.profile.name);go('home');})();

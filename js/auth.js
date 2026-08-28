@@ -1,4 +1,3 @@
-import './bootstrap.js';
 
 const tabs=document.querySelectorAll('.auth-tab');
 tabs.forEach(btn=>btn.addEventListener('click',()=>{
