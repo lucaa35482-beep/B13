@@ -1,18 +1,17 @@
-# FAC B13 — versão final sem dependência de ENV
+# FAC B13 — versão corrigida
 
-Esta versão já contém a URL pública correta do Supabase e a Publishable key no frontend.
-Não é necessário cadastrar variáveis de ambiente no Vercel para o site funcionar.
+Esta versão corrige o problema em que as abas **Entrar/Cadastrar** apareciam na tela, mas não respondiam ao clique depois do deploy no Vercel.
+
+## O que foi corrigido
+O Vite não estava levando `auth.js`, `member.js` e `leader.js` para o `dist` porque eles eram carregados dinamicamente. Agora esses arquivos ficam também em `public/js/`, então o Vercel os publica corretamente.
 
 ## Supabase
-1. Abra `supabase/01_RESET_E_INSTALAR_B13.sql`.
-2. Cole no SQL Editor e execute uma vez para recriar a estrutura B13.
-3. Cadastre a primeira conta pelo site.
-4. Edite `supabase/02_PROMOVER_PRIMEIRO_LIDER.sql` com o e-mail da conta e execute.
+A URL pública e a Publishable key já estão configuradas em `js/bootstrap.js`.
+Nunca use uma chave `service_role`/secret no frontend.
 
-## Vercel
-Suba todos os arquivos deste projeto para o repositório e faça um novo deploy.
-Framework: Vite
-Build command: `npm run build`
-Output: `dist`
-
-A chave usada é do tipo Publishable (`sb_publishable_...`), adequada para frontend. Nunca use `service_role`/Secret key no navegador.
+## Publicação
+1. Substitua os arquivos do repositório pelos desta versão.
+2. Faça commit na branch `main`.
+3. Aguarde o Vercel criar um novo deploy ou faça Redeploy sem cache.
+4. Abra o domínio principal e use Ctrl+F5.
+5. Rode `supabase/01_RESET_E_INSTALAR_B13.sql` apenas se quiser reinstalar o banco B13 do zero.
