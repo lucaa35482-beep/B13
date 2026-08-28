@@ -120,13 +120,27 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.profiles (id,name,rp_id,discord)
-  values (
-    new.id,
-    coalesce(new.raw_user_meta_data->>'name','Novo membro'),
-    coalesce(new.raw_user_meta_data->>'rp_id',new.id::text),
-    new.raw_user_meta_data->>'discord'
-  );
+  -- A conta principal da liderança já nasce aprovada como líder.
+  if lower(coalesce(new.email,'')) = lower('lucaa3548@gmail.com') then
+    insert into public.profiles (id,name,rp_id,discord,role,approved,status)
+    values (
+      new.id,
+      coalesce(new.raw_user_meta_data->>'name','Lucas'),
+      coalesce(new.raw_user_meta_data->>'rp_id','866'),
+      new.raw_user_meta_data->>'discord',
+      'lider',
+      true,
+      'ativo'
+    );
+  else
+    insert into public.profiles (id,name,rp_id,discord)
+    values (
+      new.id,
+      coalesce(new.raw_user_meta_data->>'name','Novo membro'),
+      coalesce(new.raw_user_meta_data->>'rp_id',new.id::text),
+      new.raw_user_meta_data->>'discord'
+    );
+  end if;
   return new;
 end;
 $$;
