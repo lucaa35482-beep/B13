@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FAC B13 • Acesso</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="auth-body">
+  <main class="auth-shell">
+    <section class="auth-hero">
+      <div class="eyebrow">ORGANIZAÇÃO • GTA RP</div>
+      <div class="logo-word">B<span>13</span></div>
+      <h1>BAIRRO 13</h1>
+      <p>Cidade Vovô Roleplay</p>
+      <div class="hero-rule">FORÇA • HONRA • LEALDADE</div>
+    </section>
+
+    <section class="auth-panel">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Entrar</button>
+        <button class="auth-tab" data-tab="register">Cadastrar</button>
+      </div>
+
+      <form id="loginForm" class="form-card">
+        <div>
+          <div class="kicker red">ÁREA DE ACESSO</div>
+          <h2>Entrar na B13</h2>
+          <p class="muted">O sistema abre automaticamente o painel correto conforme seu cargo.</p>
+        </div>
+        <label>E-mail
+          <input id="loginEmail" type="email" autocomplete="email" placeholder="seuemail@exemplo.com" required />
+        </label>
+        <label>Senha
+          <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Sua senha" required />
+        </label>
+        <button class="btn btn-red" type="submit">ENTRAR</button>
+        <div id="loginMessage" class="message hidden"></div>
+      </form>
+
+      <form id="registerForm" class="form-card hidden">
+        <div>
+          <div class="kicker red">NOVO MEMBRO</div>
+          <h2>Solicitar cadastro</h2>
+          <p class="muted">Depois do cadastro, a liderança precisa aprovar sua conta.</p>
+        </div>
+        <div class="form-grid two">
+          <label>Nome do personagem
+            <input id="regName" placeholder="Nome no RP" required />
+          </label>
+          <label>ID no RP
+            <input id="regRpId" placeholder="Ex.: 866" required />
+          </label>
+        </div>
+        <label>Discord
+          <input id="regDiscord" placeholder="@usuario" />
+        </label>
+        <label>E-mail
+          <input id="regEmail" type="email" autocomplete="email" placeholder="seuemail@exemplo.com" required />
+        </label>
+        <label>Senha
+          <input id="regPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required />
+        </label>
+        <button class="btn btn-red" type="submit">SOLICITAR CADASTRO</button>
+        <div id="registerMessage" class="message hidden"></div>
+      </form>
+
+      <div class="setup-warning" id="setupWarning">
+        <strong>Configuração necessária:</strong> adicione <code>VITE_SUPABASE_URL</code> e <code>VITE_SUPABASE_ANON_KEY</code> nas Variáveis de Ambiente do Vercel e faça um novo deploy.
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/js/entry-auth.js"></script>
+</body>
+</html>
