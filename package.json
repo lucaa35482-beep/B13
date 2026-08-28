@@ -1,9 +1,0 @@
-{
-  "name":"fac-b13-final",
-  "private":true,
-  "version":"3.0.0",
-  "type":"module",
-  "scripts":{"dev":"vite","build":"vite build","preview":"vite preview"},
-  "dependencies":{"@supabase/supabase-js":"^2.57.4"},
-  "devDependencies":{"vite":"^7.1.3"}
-}
