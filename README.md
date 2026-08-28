@@ -1,12 +1,15 @@
-# FAC B13 — versão estática final
+# FAC B13 — CORREÇÃO DEFINITIVA
 
-Esta versão não usa Vite, npm, variáveis do Vercel nem Supabase Auth.
-O navegador chama as RPCs do Supabase diretamente via REST usando somente a Publishable Key.
+Esta versão corrige o erro `B13_CONFIGURED is not defined` e força o navegador/Vercel a carregar os arquivos JS novos usando cache-busting.
 
 ## Instalação
-1. Supabase > SQL Editor: execute `supabase/01_INSTALAR_B13_SEM_EMAIL.sql` inteiro uma vez.
-2. Publique TODOS os arquivos desta pasta no GitHub/Vercel.
-3. No Vercel não configure Build Command; o projeto é estático.
-4. Abra o site e entre com a conta principal criada pelo SQL.
+1. No Supabase > SQL Editor, execute **uma vez** `supabase/01_INSTALAR_B13_SEM_EMAIL.sql`.
+2. No GitHub, substitua TODO o conteúdo antigo do projeto pelo conteúdo desta pasta. Não misture arquivos de versões anteriores.
+3. Faça commit na `main` e aguarde o Vercel publicar.
+4. Abra o domínio de produção e use Ctrl+F5.
 
-Se o SQL já foi executado com sucesso antes, não precisa rodá-lo de novo.
+## Acesso principal
+- E-mail: o e-mail de liderança já cadastrado no SQL.
+- Senha: a senha definida para essa conta no SQL desta versão.
+
+O login não usa Supabase Auth nem envio de e-mail; ele usa RPCs do banco.

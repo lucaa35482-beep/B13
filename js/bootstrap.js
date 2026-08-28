@@ -1,3 +1,10 @@
+// Compatibilidade: garante que versões antigas de auth.js em cache não quebrem o login.
+var B13_CONFIGURED = true;
+var B13_CONFIG = {
+  SUPABASE_URL: 'https://thcqeuhmrhzyssvemaer.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_92cmGjpVBye576YY5ee97g_PXUH9996'
+};
+
 (function(){
   'use strict';
   const SUPABASE_URL='https://thcqeuhmrhzyssvemaer.supabase.co';
