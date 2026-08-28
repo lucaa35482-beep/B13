@@ -5,7 +5,7 @@ tabs.forEach(btn=>btn.addEventListener('click',()=>{
   document.getElementById('registerForm').classList.toggle('hidden',btn.dataset.tab!=='register');
 }));
 
-if(window.B13_CONFIGURED) document.getElementById('setupWarning').classList.add('hidden');
+
 
 function message(id,text,type='info'){
   const el=document.getElementById(id);el.className='message '+type;el.textContent=text;

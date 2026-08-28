@@ -1,11 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || '').trim().replace(/\/$/, '');
-const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+// Configuração pública do Supabase.
+// A Publishable key é própria para uso no navegador e é protegida pelas políticas RLS do banco.
+const SUPABASE_URL = 'https://thcqeuhmrhzyssvemaer.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_92cmGjpVBye576YY5ee97g_PXUH9996';
 
-const configured =
-  /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(SUPABASE_URL) &&
-  (SUPABASE_ANON_KEY.startsWith('sb_publishable_') || SUPABASE_ANON_KEY.startsWith('eyJ'));
+const configured = true;
 
 window.B13_CONFIG = { SUPABASE_URL, SUPABASE_ANON_KEY };
 window.B13_CONFIGURED = configured;
