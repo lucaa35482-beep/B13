@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>B13 • Painel do Membro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260828r4" />
+</head>
+<body class="member-theme">
+  <div class="portal-layout">
+    <aside class="side member-side">
+      <div class="side-brand"><div class="logo-mini">B<span>13</span></div><div><b>MEMBRO</b><small>Área pessoal</small></div></div>
+      <nav id="memberNav" class="side-nav">
+        <button data-page="home" class="active">⌂ <span>Início</span></button>
+        <button data-page="deliver">▣ <span>Entregar Farm</span></button>
+        <button data-page="history">▤ <span>Minhas Entregas</span></button>
+        <button data-page="goal">◎ <span>Minha Meta</span></button>
+        <button data-page="payments">$ <span>Meus Pagamentos</span></button>
+        <button data-page="ranking">★ <span>Ranking</span></button>
+        <button data-page="notices">! <span>Avisos</span></button>
+      </nav>
+      <div class="side-footer">B13 • VOVÔ ROLEPLAY</div>
+    </aside>
+
+    <main class="portal-main">
+      <header class="portal-top member-top">
+        <div><div class="kicker">PAINEL DO MEMBRO</div><h1 id="pageTitle">Início</h1></div>
+        <div class="user-area"><div class="user-avatar" id="avatar">M</div><div><b id="userName">Membro</b><small id="userRole">Membro</small></div><button class="btn btn-dark" id="logoutBtn">Sair</button></div>
+      </header>
+      <section id="memberContent" class="portal-content"></section>
+    </main>
+  </div>
+  <script src="js/bootstrap.js?v=20260828r4"></script>
+  <script src="js/member.js?v=20260828r4"></script>
+</body>
+</html>
