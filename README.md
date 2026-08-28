@@ -1,102 +1,60 @@
-# FAC B13 — Projeto com Supabase
+# FAC B13 — Vercel + Supabase (variáveis de ambiente)
 
-Esta versão tem **dois painéis realmente diferentes**:
+Esta versão NÃO possui URL nem chave do Supabase gravadas no código.
+O Vercel injeta as configurações no build através das variáveis de ambiente.
 
-- `member.html` — painel pessoal do membro.
-- `leader.html` — central administrativa da liderança.
+## 1. Supabase — instalar o banco do zero
+1. Abra Supabase > SQL Editor > New query.
+2. Abra `supabase/INSTALAR_DO_ZERO.sql` deste projeto.
+3. Copie TODO o conteúdo, cole no SQL Editor e clique em Run.
+4. O script apaga/recria somente as estruturas B13: profiles, deliveries, notices, admin_logs, tipos, funções, triggers e policies B13.
 
-O login identifica o cargo no Supabase e abre o painel correto automaticamente.
+## 2. Vercel — variáveis de ambiente
+No projeto B13: Settings / Configurações > Environment Variables / Variáveis Ambientais.
 
-## O que fica salvo no Supabase
+Crie exatamente:
 
-- contas e autenticação (Supabase Auth)
-- perfis de membros
-- ID do RP, Discord, cargo e status
-- aprovação de novos cadastros
-- entregas de farm
-- folhas, kits e cálculos financeiros
-- pagamentos pendentes/pagos
-- data e responsável pelo pagamento
-- avisos da liderança
-- logs administrativos
-- ranking (calculado no banco)
+- `VITE_SUPABASE_URL`
+  - Valor: sua Project URL, SEM `/rest/v1/`.
+  - Exemplo: `https://xxxxxxxxxxxxxxxxxxxx.supabase.co`
 
-## Regras já configuradas
+- `VITE_SUPABASE_ANON_KEY`
+  - Valor: sua `Publishable key` (começa com `sb_publishable_...`).
+  - NÃO use Secret key nem service_role.
 
-- Meta diária: **1.000 folhas**
-- 1 folha = **3 kits**
-- Cálculo da meta: **$300 por kit**
-- Membro: **20%**
-- FAC B13: **80%**
-- Venda para membros: **$280/unidade**
-- Venda para público/não membros: **$300/unidade**
+Marque Production, Preview e Development e salve.
 
-## Como ligar ao Supabase
+## 3. GitHub / Vercel
+1. Envie TODOS os arquivos deste projeto para o repositório GitHub (extraídos; não envie apenas o ZIP).
+2. O Vercel detectará Vite automaticamente.
+3. Framework Preset: Vite.
+4. Build Command: `npm run build` (normalmente automático).
+5. Output Directory: `dist` (normalmente automático).
+6. Depois de criar/alterar variáveis, faça um novo Deploy/Redeploy.
 
-### 1. Criar o projeto
-Crie um projeto em Supabase.
+## 4. URL do Vercel no Supabase
+Supabase > Authentication > URL Configuration:
+- Site URL: sua URL principal do Vercel.
+- Redirect URLs: `https://SEU-SITE.vercel.app/**`
 
-### 2. Criar as tabelas e segurança
-Abra **SQL Editor** no Supabase e execute todo o arquivo:
+## 5. Criar o primeiro líder
+1. Cadastre sua conta pelo próprio site B13.
+2. Se a confirmação de e-mail estiver ativada, confirme seu e-mail antes do primeiro login.
+3. No Supabase SQL Editor, abra `supabase/PROMOVER_PRIMEIRO_LIDER.sql`.
+4. Troque `SEU_EMAIL_AQUI` pelo e-mail usado no cadastro (nas duas ocorrências).
+5. Clique em Run.
+6. Faça login novamente: contas com cargo `lider`, `sub_lider` ou `gerente` são encaminhadas ao painel da Liderança; membros comuns vão ao painel do Membro.
 
-`supabase/schema.sql`
-
-Ele cria tabelas, funções, trigger de cadastro e políticas RLS.
-
-### 3. Colocar URL e chave pública
-No Supabase, vá em **Project Settings > API** e copie:
-
-- Project URL
-- `anon` / public key
-
-Abra `js/config.js` e substitua:
-
-```js
-SUPABASE_URL: "https://thcqeuhmrhzyssvemaer.supabase.co",
-SUPABASE_ANON_KEY: "sb_publishable_92cmGjpVBye576YY5ee97g_PXUH9996"
-```
-
-**Nunca coloque a `service_role` no site ou no GitHub.**
-
-### 4. Criar o primeiro líder
-Faça seu cadastro normalmente pelo site. Depois, no SQL Editor, rode:
-
-```sql
-update public.profiles p
-set approved=true, role='lider', status='ativo'
-from auth.users u
-where p.id=u.id and u.email='SEU_EMAIL@EXEMPLO.COM';
-```
-
-Troque o e-mail pelo e-mail usado no cadastro.
-
-### 5. Publicar no GitHub Pages
-Envie para a raiz do repositório:
-
-- `index.html`
-- `member.html`
-- `leader.html`
-- `styles.css`
-- pasta `js`
-- pasta `supabase`
-- `README.md`
-
-Depois: **GitHub > Settings > Pages > Deploy from a branch > main > /(root)**.
+## Regras B13 configuradas no banco
+- Meta diária: 1.000 folhas
+- 1 folha = 3 kits
+- Cálculo-base: $300 por kit
+- Membro: 20%
+- FAC B13: 80%
+- Venda para membros: $280 por unidade
+- Venda para público/não membros: $300 por unidade
 
 ## Segurança
-
-Os controles administrativos não são apenas escondidos na tela. O banco usa **Row Level Security (RLS)** para impedir que um membro comum consulte ou altere dados administrativos.
-
-A chave `anon/public` pode ficar no front-end porque as permissões reais são aplicadas pelas políticas RLS. A chave `service_role` não pode ser exposta.
-
-
-## Configuração já aplicada para o seu projeto
-
-A Project URL já está preenchida em `js/config.js`:
-
-`https://thcqeuhmrhzyssvemaer.supabase.co`
-
-A Publishable key mostrada na captura estava abreviada com `...`, então o arquivo deixa um único campo para você colar a chave completa copiada pelo botão **Copy** do Supabase. Depois disso, não precisa alterar mais nada nesse arquivo.
-
-## Correção para erro `b13_role already exists`
-Se você já tentou executar o SQL antes e apareceu esse erro, use agora o arquivo `supabase/INSTALACAO_LIMPA.sql`. Ele remove somente as estruturas do sistema B13 e as recria na ordem correta. **Ele apaga dados B13 existentes**, então use para a instalação inicial/reinstalação.
+- O navegador recebe apenas a Publishable key.
+- As regras RLS do Supabase limitam o que membros e liderança podem ler/alterar.
+- Nunca publique `secret key` ou `service_role` no GitHub, Vercel client-side ou arquivos JS.
