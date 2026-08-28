@@ -52,7 +52,7 @@ No Supabase, vá em **Project Settings > API** e copie:
 Abra `js/config.js` e substitua:
 
 ```js
-SUPABASE_URL: "https://thcqehumrhyzssvemaer.supabase.co",
+SUPABASE_URL: "https://thcqeuhmrhzyssvemaer.supabase.co",
 SUPABASE_ANON_KEY: "sb_publishable_92cmGjpVBye576YY5ee97g_PXUH9996"
 ```
 
@@ -94,7 +94,7 @@ A chave `anon/public` pode ficar no front-end porque as permissões reais são a
 
 A Project URL já está preenchida em `js/config.js`:
 
-`https://thcqehumrhyzssvemaer.supabase.co`
+`https://thcqeuhmrhzyssvemaer.supabase.co`
 
 A Publishable key mostrada na captura estava abreviada com `...`, então o arquivo deixa um único campo para você colar a chave completa copiada pelo botão **Copy** do Supabase. Depois disso, não precisa alterar mais nada nesse arquivo.
 
