@@ -5,7 +5,20 @@
 -- Execute TODO este arquivo uma única vez no Supabase > SQL Editor > Run.
 -- ============================================================
 
-create extension if not exists pgcrypto;
+create schema if not exists extensions;
+
+do $$
+begin
+  if exists (select 1 from pg_extension where extname = 'pgcrypto') then
+    begin
+      execute 'alter extension pgcrypto set schema extensions';
+    exception when others then
+      null;
+    end;
+  else
+    execute 'create extension pgcrypto with schema extensions';
+  end if;
+end $$;
 
 -- LIMPEZA B13 ANTIGA
 drop trigger if exists on_auth_user_created on auth.users;
@@ -101,7 +114,7 @@ values ('Lucas','866','luck_26','lucaa3548@gmail.com','11cc8190c4fa3aa66d7071ad9
 
 -- Helpers internos
 create or replace function public.b13_account_id(p_token text)
-returns uuid language sql stable security definer set search_path=public,pg_temp as $$
+returns uuid language sql stable security definer set search_path=public,extensions,pg_temp as $$
   select s.account_id from public.b13_sessions s
   join public.b13_accounts a on a.id=s.account_id
   where s.token::text=p_token and s.expires_at>now() and a.status='ativo'
@@ -109,12 +122,12 @@ returns uuid language sql stable security definer set search_path=public,pg_temp
 $$;
 
 create or replace function public.b13_is_leader(p_token text)
-returns boolean language sql stable security definer set search_path=public,pg_temp as $$
+returns boolean language sql stable security definer set search_path=public,extensions,pg_temp as $$
   select exists(select 1 from public.b13_accounts a where a.id=public.b13_account_id(p_token) and a.approved=true and a.status='ativo' and a.role in ('gerente','sub_lider','lider'))
 $$;
 
 create or replace function public.b13_require_account(p_token text)
-returns uuid language plpgsql stable security definer set search_path=public,pg_temp as $$
+returns uuid language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$
 declare v uuid; begin
   v:=public.b13_account_id(p_token);
   if v is null then raise exception 'B13: Sessão inválida ou expirada.'; end if;
@@ -122,7 +135,7 @@ declare v uuid; begin
 end $$;
 
 create or replace function public.b13_require_leader(p_token text)
-returns uuid language plpgsql stable security definer set search_path=public,pg_temp as $$
+returns uuid language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$
 declare v uuid; begin
   v:=public.b13_require_account(p_token);
   if not public.b13_is_leader(p_token) then raise exception 'B13: Acesso restrito à liderança.'; end if;
@@ -131,11 +144,11 @@ end $$;
 
 -- LOGIN / CADASTRO
 create or replace function public.b13_login(p_email text,p_password text)
-returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+returns jsonb language plpgsql security definer set search_path=public,extensions,pg_temp as $$
 declare a public.b13_accounts; t uuid; calc text; begin
   select * into a from public.b13_accounts where lower(email)=lower(trim(p_email)) limit 1;
   if a.id is null then raise exception 'B13: E-mail ou senha inválidos.'; end if;
-  calc:=encode(digest(coalesce(p_password,'')||a.password_salt,'sha256'),'hex');
+  calc:=encode(extensions.digest(convert_to(coalesce(p_password,'')||a.password_salt,'UTF8'),'sha256'),'hex');
   if calc<>a.password_hash then raise exception 'B13: E-mail ou senha inválidos.'; end if;
   if not a.approved then raise exception 'B13: Seu cadastro ainda aguarda aprovação da liderança.'; end if;
   if a.status<>'ativo' then raise exception 'B13: Sua conta está desativada.'; end if;
@@ -145,7 +158,7 @@ declare a public.b13_accounts; t uuid; calc text; begin
 end $$;
 
 create or replace function public.b13_register(p_name text,p_rp_id text,p_discord text,p_email text,p_password text)
-returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+returns jsonb language plpgsql security definer set search_path=public,extensions,pg_temp as $$
 declare salt text; h text; begin
   if length(trim(coalesce(p_name,'')))<2 then raise exception 'B13: Informe o nome do personagem.'; end if;
   if length(trim(coalesce(p_rp_id,'')))<1 then raise exception 'B13: Informe o ID do RP.'; end if;
@@ -153,20 +166,20 @@ declare salt text; h text; begin
   if length(coalesce(p_password,''))<6 then raise exception 'B13: A senha precisa ter no mínimo 6 caracteres.'; end if;
   if exists(select 1 from public.b13_accounts where lower(email)=lower(trim(p_email))) then raise exception 'B13: Este e-mail já está cadastrado.'; end if;
   if exists(select 1 from public.b13_accounts where rp_id=trim(p_rp_id)) then raise exception 'B13: Este ID do RP já está cadastrado.'; end if;
-  salt:=encode(gen_random_bytes(16),'hex');
-  h:=encode(digest(p_password||salt,'sha256'),'hex');
+  salt:=encode(extensions.gen_random_bytes(16),'hex');
+  h:=encode(extensions.digest(convert_to(p_password||salt,'UTF8'),'sha256'),'hex');
   insert into public.b13_accounts(name,rp_id,discord,email,password_salt,password_hash,role,approved,status)
   values(trim(p_name),trim(p_rp_id),nullif(trim(p_discord),''),lower(trim(p_email)),salt,h,'membro',false,'ativo');
   return jsonb_build_object('ok',true,'message','Cadastro criado! Agora aguarde a aprovação da liderança.');
 end $$;
 
 create or replace function public.b13_logout(p_token text)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$ begin
+returns boolean language plpgsql security definer set search_path=public,extensions,pg_temp as $$ begin
   delete from public.b13_sessions where token::text=p_token; return true;
 end $$;
 
 create or replace function public.b13_me(p_token text)
-returns jsonb language plpgsql stable security definer set search_path=public,pg_temp as $$
+returns jsonb language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$
 declare a public.b13_accounts; begin
   select * into a from public.b13_accounts where id=public.b13_require_account(p_token);
   return jsonb_build_object('id',a.id,'name',a.name,'rp_id',a.rp_id,'discord',a.discord,'email',a.email,'role',a.role::text,'approved',a.approved,'status',a.status::text,'created_at',a.created_at);
@@ -175,13 +188,13 @@ end $$;
 -- MEMBRO
 create or replace function public.b13_member_deliveries(p_token text)
 returns table(id uuid,member_id uuid,leaves integer,kits integer,gross_amount numeric,member_amount numeric,org_amount numeric,payment_status text,paid_at timestamptz,created_at timestamptz)
-language sql stable security definer set search_path=public,pg_temp as $$
+language sql stable security definer set search_path=public,extensions,pg_temp as $$
   select d.id,d.member_id,d.leaves,d.kits,d.gross_amount,d.member_amount,d.org_amount,d.payment_status::text,d.paid_at,d.created_at
   from public.deliveries d where d.member_id=public.b13_require_account(p_token) order by d.created_at desc
 $$;
 
 create or replace function public.b13_submit_delivery(p_token text,p_leaves integer)
-returns jsonb language plpgsql security definer set search_path=public,pg_temp as $$
+returns jsonb language plpgsql security definer set search_path=public,extensions,pg_temp as $$
 declare uid uuid; kits integer; gross numeric; rec numeric; org numeric; did uuid; a public.b13_accounts; begin
   uid:=public.b13_require_account(p_token); select * into a from public.b13_accounts where id=uid;
   if not a.approved or a.status<>'ativo' then raise exception 'B13: Conta sem permissão para registrar entrega.'; end if;
@@ -193,14 +206,14 @@ end $$;
 
 create or replace function public.b13_ranking(p_token text)
 returns table(member_id uuid,member_name text,total_leaves bigint,total_deliveries bigint)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_account(p_token);
   return query select a.id,a.name,coalesce(sum(d.leaves),0)::bigint,count(d.id)::bigint from public.b13_accounts a left join public.deliveries d on d.member_id=a.id where a.approved=true and a.status='ativo' group by a.id,a.name order by coalesce(sum(d.leaves),0) desc,a.name;
 end $$;
 
 create or replace function public.b13_list_notices(p_token text)
 returns table(id uuid,title text,body text,important boolean,created_at timestamptz)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_account(p_token);
   return query select n.id,n.title,n.body,n.important,n.created_at from public.notices n order by n.created_at desc;
 end $$;
@@ -208,20 +221,20 @@ end $$;
 -- ADMIN
 create or replace function public.b13_admin_profiles(p_token text)
 returns table(id uuid,name text,rp_id text,discord text,email text,role text,approved boolean,status text,created_at timestamptz)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_leader(p_token);
   return query select a.id,a.name,a.rp_id,a.discord,a.email,a.role::text,a.approved,a.status::text,a.created_at from public.b13_accounts a order by a.created_at desc;
 end $$;
 
 create or replace function public.b13_admin_deliveries(p_token text)
 returns table(id uuid,member_id uuid,member_name text,rp_id text,leaves integer,kits integer,gross_amount numeric,member_amount numeric,org_amount numeric,payment_status text,paid_at timestamptz,created_at timestamptz)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_leader(p_token);
   return query select d.id,d.member_id,a.name,a.rp_id,d.leaves,d.kits,d.gross_amount,d.member_amount,d.org_amount,d.payment_status::text,d.paid_at,d.created_at from public.deliveries d join public.b13_accounts a on a.id=d.member_id order by d.created_at desc;
 end $$;
 
 create or replace function public.b13_admin_set_role(p_token text,p_account_id uuid,p_role text)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$ declare actor uuid; an text; begin
+returns boolean language plpgsql security definer set search_path=public,extensions,pg_temp as $$ declare actor uuid; an text; begin
   actor:=public.b13_require_leader(p_token); select name into an from public.b13_accounts where id=actor;
   if p_role not in ('membro','recrutador','gerente','sub_lider','lider') then raise exception 'B13: Cargo inválido.'; end if;
   update public.b13_accounts set role=p_role::public.b13_role,updated_at=now() where id=p_account_id;
@@ -229,7 +242,7 @@ returns boolean language plpgsql security definer set search_path=public,pg_temp
 end $$;
 
 create or replace function public.b13_admin_set_status(p_token text,p_account_id uuid,p_status text)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$ declare actor uuid; an text; begin
+returns boolean language plpgsql security definer set search_path=public,extensions,pg_temp as $$ declare actor uuid; an text; begin
   actor:=public.b13_require_leader(p_token); select name into an from public.b13_accounts where id=actor;
   if p_status not in ('ativo','inativo') then raise exception 'B13: Status inválido.'; end if;
   update public.b13_accounts set status=p_status::public.b13_status,updated_at=now() where id=p_account_id;
@@ -238,21 +251,21 @@ returns boolean language plpgsql security definer set search_path=public,pg_temp
 end $$;
 
 create or replace function public.b13_admin_approve(p_token text,p_account_id uuid,p_approved boolean)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$ declare actor uuid; an text; begin
+returns boolean language plpgsql security definer set search_path=public,extensions,pg_temp as $$ declare actor uuid; an text; begin
   actor:=public.b13_require_leader(p_token); select name into an from public.b13_accounts where id=actor;
   update public.b13_accounts set approved=p_approved,status=(case when p_approved then 'ativo'::public.b13_status else 'inativo'::public.b13_status end),updated_at=now() where id=p_account_id;
   insert into public.admin_logs(action,actor_id,actor_name,target_user_id) values(case when p_approved then 'Cadastro aprovado' else 'Cadastro recusado/desativado' end,actor,an,p_account_id); return true;
 end $$;
 
 create or replace function public.b13_admin_pay(p_token text,p_delivery_id uuid)
-returns boolean language plpgsql security definer set search_path=public,pg_temp as $$ declare actor uuid; an text; begin
+returns boolean language plpgsql security definer set search_path=public,extensions,pg_temp as $$ declare actor uuid; an text; begin
   actor:=public.b13_require_leader(p_token); select name into an from public.b13_accounts where id=actor;
   update public.deliveries set payment_status='pago',paid_at=now(),paid_by=actor where id=p_delivery_id and payment_status='pendente';
   insert into public.admin_logs(action,actor_id,actor_name,delivery_id) values('Pagamento confirmado',actor,an,p_delivery_id); return true;
 end $$;
 
 create or replace function public.b13_admin_pay_all(p_token text)
-returns integer language plpgsql security definer set search_path=public,pg_temp as $$ declare actor uuid; an text; n integer; begin
+returns integer language plpgsql security definer set search_path=public,extensions,pg_temp as $$ declare actor uuid; an text; n integer; begin
   actor:=public.b13_require_leader(p_token); select name into an from public.b13_accounts where id=actor;
   update public.deliveries set payment_status='pago',paid_at=now(),paid_by=actor where payment_status='pendente'; get diagnostics n=row_count;
   insert into public.admin_logs(action,actor_id,actor_name) values('Pagamentos pendentes confirmados em lote ('||n||')',actor,an); return n;
@@ -260,20 +273,20 @@ end $$;
 
 create or replace function public.b13_admin_daily_progress(p_token text)
 returns table(member_id uuid,member_name text,total_leaves bigint)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_leader(p_token);
   return query select a.id,a.name,coalesce(sum(d.leaves) filter(where timezone('America/Sao_Paulo',d.created_at)::date=timezone('America/Sao_Paulo',now())::date),0)::bigint from public.b13_accounts a left join public.deliveries d on d.member_id=a.id where a.approved=true and a.status='ativo' group by a.id,a.name order by 3 desc,a.name;
 end $$;
 
 create or replace function public.b13_admin_ranking(p_token text)
 returns table(member_id uuid,member_name text,total_leaves bigint,total_deliveries bigint)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_leader(p_token);
   return query select a.id,a.name,coalesce(sum(d.leaves),0)::bigint,count(d.id)::bigint from public.b13_accounts a left join public.deliveries d on d.member_id=a.id where a.approved=true and a.status='ativo' group by a.id,a.name order by coalesce(sum(d.leaves),0) desc,a.name;
 end $$;
 
 create or replace function public.b13_admin_publish_notice(p_token text,p_title text,p_body text,p_important boolean default false)
-returns uuid language plpgsql security definer set search_path=public,pg_temp as $$ declare actor uuid; an text; nid uuid; begin
+returns uuid language plpgsql security definer set search_path=public,extensions,pg_temp as $$ declare actor uuid; an text; nid uuid; begin
   actor:=public.b13_require_leader(p_token); select name into an from public.b13_accounts where id=actor;
   if length(trim(coalesce(p_title,'')))<1 or length(trim(coalesce(p_body,'')))<1 then raise exception 'B13: Preencha título e mensagem.'; end if;
   insert into public.notices(title,body,important,created_by) values(trim(p_title),trim(p_body),coalesce(p_important,false),actor) returning id into nid;
@@ -282,7 +295,7 @@ end $$;
 
 create or replace function public.b13_admin_logs(p_token text)
 returns table(id bigint,action text,actor_name text,created_at timestamptz)
-language plpgsql stable security definer set search_path=public,pg_temp as $$ begin
+language plpgsql stable security definer set search_path=public,extensions,pg_temp as $$ begin
   perform public.b13_require_leader(p_token);
   return query select l.id,l.action,l.actor_name,l.created_at from public.admin_logs l order by l.created_at desc limit 100;
 end $$;
