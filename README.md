@@ -1,15 +1,15 @@
-# FAC B13 — acesso da liderança preparado
+# FAC B13 — versão final sem confirmação de e-mail
 
-Projeto configurado com Supabase e com o e-mail principal da liderança **lucaa3548@gmail.com** já preenchido na tela de acesso.
+Esta versão remove a dependência do Supabase Auth. O Supabase é usado como banco + RPC seguro. Isso elimina o erro `email rate limit exceeded`.
 
-## Importante sobre a senha
-A senha **não foi colocada dentro dos arquivos públicos do site**. Se ela fosse gravada no JavaScript/HTML, qualquer pessoa conseguiria vê-la pelo navegador.
+## Instalação
+1. Supabase > SQL Editor > New query.
+2. Cole TODO o arquivo `supabase/01_INSTALAR_B13_SEM_EMAIL.sql` e clique em Run.
+3. No GitHub, substitua o projeto pelos arquivos desta pasta.
+4. O Vercel fará o deploy Vite automaticamente. Se necessário, faça Redeploy sem cache.
+5. Abra o domínio e entre pela aba **Entrar**. A conta principal da liderança já é criada pelo SQL.
 
-## Instalação limpa
-1. No Supabase > SQL Editor, execute `supabase/01_RESET_E_INSTALAR_B13.sql`.
-2. Publique estes arquivos no GitHub/Vercel.
-3. Se a conta ainda não existir no Supabase Authentication, use a aba **Cadastrar** uma única vez com o e-mail principal e a sua senha. O trigger do banco já cria essa conta como `lider`, aprovada e ativa.
-4. Depois disso, basta entrar normalmente; o sistema encaminha direto ao `leader.html`.
-5. Se a conta já existia antes de rodar o SQL, execute `supabase/02_PROMOVER_PRIMEIRO_LIDER.sql` uma vez.
-
-A URL e a Publishable key do Supabase já estão configuradas no frontend.
+## Importante
+- A senha da conta principal não está escrita em texto aberto no frontend ou no SQL; o banco recebe apenas um hash pré-calculado.
+- Novos membros podem usar a aba **Cadastrar** sem receber e-mail. Eles ficam aguardando aprovação da liderança.
+- A Publishable key do Supabase é pública por definição. Não use `service_role` no frontend.
